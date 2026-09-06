@@ -1,11 +1,12 @@
 """Configuração agregada do fg_core.
 
-Hoje só carrega a fatia do `fg_rag`. Cada novo módulo da família adiciona seus
-campos aqui (prefixados) e um `para_<modulo>()` que devolve a configuração dele.
+Cada módulo da família tem sua fatia de campos (prefixada) e um `para_<modulo>()`
+que devolve a `Configuracao` dele. Hoje: `fg_rag` e `fg_guardrail`.
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from fg_guardrail import Configuracao as ConfiguracaoGuardrail
 from fg_rag import Configuracao as ConfiguracaoRag
 
 
@@ -23,6 +24,14 @@ class Configuracao(BaseSettings):
     rag_top_k: int = 4
     rag_regiao_aws: str = "us-east-1"
 
+    # ---- fg_guardrail ----
+    guardrail_id: str | None = None
+    guardrail_versao: str = "DRAFT"
+    guardrail_id_saida: str | None = None
+    guardrail_versao_saida: str = "DRAFT"
+    guardrail_regiao_aws: str = "us-east-1"
+    guardrail_tamanho_minimo_entrada: int = 10
+
     def para_rag(self) -> ConfiguracaoRag:
         """Traduz a fatia `rag_*` para a `Configuracao` do fg_rag."""
         return ConfiguracaoRag(
@@ -35,4 +44,15 @@ class Configuracao(BaseSettings):
             modelo_embedding_bedrock=self.rag_modelo_embedding_bedrock,
             top_k=self.rag_top_k,
             regiao_aws=self.rag_regiao_aws,
+        )
+
+    def para_guardrail(self) -> ConfiguracaoGuardrail:
+        """Traduz a fatia `guardrail_*` para a `Configuracao` do fg_guardrail."""
+        return ConfiguracaoGuardrail(
+            guardrail_id=self.guardrail_id,
+            guardrail_versao=self.guardrail_versao,
+            guardrail_id_saida=self.guardrail_id_saida,
+            guardrail_versao_saida=self.guardrail_versao_saida,
+            regiao_aws=self.guardrail_regiao_aws,
+            tamanho_minimo_entrada=self.guardrail_tamanho_minimo_entrada,
         )
