@@ -55,6 +55,7 @@ fg_rag       @ git+https://github.com/Rolmer1964/fg_rag.git@v0.1.0
 fg_guardrail @ git+https://github.com/Rolmer1964/fg_guardrail.git@v0.1.0
 ```
 
-Para editar um deles localmente: `pip install -e ../../<pacote>` depois do install.
-Para trocar o endereço de um repositório, edite a linha em `pyproject.toml` e
-reinstale com `pip install -e ".[dev]" --force-reinstall --no-deps`.
+Para editar um deles localmente: `pip install -e ../<pacote>` depois do install
+(ambos são pastas irmãs em `fg_geral/`). Para trocar o endereço de um repositório,
+edite a linha em `pyproject.toml` e reinstale com
+`pip install -e ".[dev]" --force-reinstall --no-deps`.
