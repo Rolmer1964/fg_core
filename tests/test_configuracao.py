@@ -1,5 +1,6 @@
 from fg_guardrail import Configuracao as ConfiguracaoGuardrail
 from fg_rag import Configuracao as ConfiguracaoRag
+from fg_triagem import Configuracao as ConfiguracaoTriagem
 
 from fg_core import Configuracao
 
@@ -31,14 +32,31 @@ def test_para_guardrail_mapeia_1_para_1():
     assert g.tamanho_minimo_entrada == 25
 
 
+def test_para_triagem_mapeia_1_para_1():
+    c = Configuracao(
+        triagem_modelo_bedrock="modelo-x",
+        triagem_regiao_aws="sa-east-1",
+        triagem_temperatura=0.7,
+        triagem_max_tokens=999,
+    )
+    t = c.para_triagem()
+    assert isinstance(t, ConfiguracaoTriagem)
+    assert t.modelo_bedrock == "modelo-x"
+    assert t.regiao_aws == "sa-east-1"
+    assert t.temperatura == 0.7
+    assert t.max_tokens == 999
+
+
 def test_le_do_ambiente(monkeypatch):
     monkeypatch.setenv("FG_CORE_RAG_TOP_K", "9")
     monkeypatch.setenv("FG_CORE_RAG_VETORIZADOR", "deterministico")
     monkeypatch.setenv("FG_CORE_GUARDRAIL_ID", "abc123")
+    monkeypatch.setenv("FG_CORE_TRIAGEM_MAX_TOKENS", "1200")
     c = Configuracao()
     assert c.rag_top_k == 9
     assert c.rag_vetorizador == "deterministico"
     assert c.guardrail_id == "abc123"
+    assert c.triagem_max_tokens == 1200
 
 
 def test_defaults():
@@ -48,3 +66,5 @@ def test_defaults():
     assert c.rag_top_k == 4
     assert c.guardrail_id is None
     assert c.guardrail_tamanho_minimo_entrada == 10
+    assert c.triagem_modelo_bedrock.startswith("us.anthropic.claude-haiku")
+    assert c.triagem_temperatura == 0.1

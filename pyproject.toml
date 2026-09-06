@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fg_core"
-version = "0.2.0"
+version = "0.3.0"
 description = "fg_core — integrador da família FinGuard (fg_rag, fg_guardrail, fg_triagem, ...)"
 requires-python = ">=3.12"
 dependencies = [
@@ -12,6 +12,7 @@ dependencies = [
     "pydantic-settings==2.5.2",
     "fg_rag @ git+https://github.com/Rolmer1964/fg_rag.git@v0.1.0",
     "fg_guardrail @ git+https://github.com/Rolmer1964/fg_guardrail.git@v0.1.0",
+    "fg_triagem @ git+https://github.com/Rolmer1964/fg_triagem.git@v0.1.0",
 ]
 
 [project.optional-dependencies]

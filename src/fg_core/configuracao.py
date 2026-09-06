@@ -1,13 +1,14 @@
 """Configuração agregada do fg_core.
 
 Cada módulo da família tem sua fatia de campos (prefixada) e um `para_<modulo>()`
-que devolve a `Configuracao` dele. Hoje: `fg_rag` e `fg_guardrail`.
+que devolve a `Configuracao` dele. Hoje: `fg_rag`, `fg_guardrail`, `fg_triagem`.
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from fg_guardrail import Configuracao as ConfiguracaoGuardrail
 from fg_rag import Configuracao as ConfiguracaoRag
+from fg_triagem import Configuracao as ConfiguracaoTriagem
 
 
 class Configuracao(BaseSettings):
@@ -32,6 +33,12 @@ class Configuracao(BaseSettings):
     guardrail_regiao_aws: str = "us-east-1"
     guardrail_tamanho_minimo_entrada: int = 10
 
+    # ---- fg_triagem ----
+    triagem_modelo_bedrock: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+    triagem_regiao_aws: str = "us-east-1"
+    triagem_temperatura: float = 0.1
+    triagem_max_tokens: int = 600
+
     def para_rag(self) -> ConfiguracaoRag:
         """Traduz a fatia `rag_*` para a `Configuracao` do fg_rag."""
         return ConfiguracaoRag(
@@ -55,4 +62,13 @@ class Configuracao(BaseSettings):
             guardrail_versao_saida=self.guardrail_versao_saida,
             regiao_aws=self.guardrail_regiao_aws,
             tamanho_minimo_entrada=self.guardrail_tamanho_minimo_entrada,
+        )
+
+    def para_triagem(self) -> ConfiguracaoTriagem:
+        """Traduz a fatia `triagem_*` para a `Configuracao` do fg_triagem."""
+        return ConfiguracaoTriagem(
+            modelo_bedrock=self.triagem_modelo_bedrock,
+            regiao_aws=self.triagem_regiao_aws,
+            temperatura=self.triagem_temperatura,
+            max_tokens=self.triagem_max_tokens,
         )

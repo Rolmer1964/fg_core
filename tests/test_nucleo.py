@@ -1,5 +1,7 @@
+import fg_triagem.triagem as triagem_mod
 from fg_guardrail import Guardrail
 from fg_rag import RagLocal
+from fg_triagem import ResultadoTriagem, Triagem
 
 from fg_core import Configuracao, Nucleo
 
@@ -32,6 +34,24 @@ def test_guardrail_via_nucleo_usa_camada_local(config):
 def test_guardrail_respeita_config_do_core():
     n = Nucleo(Configuracao(guardrail_tamanho_minimo_entrada=50))
     assert n.guardrail.verificar_entrada("texto curto de reclamação").bloqueado is True
+
+
+def test_triagem_e_triagem_lazy_e_unico(config):
+    n = Nucleo(config)
+    assert n._triagem is None
+    primeiro = n.triagem
+    assert isinstance(primeiro, Triagem)
+    assert n.triagem is primeiro
+
+
+def test_triagem_via_nucleo_classifica(config, monkeypatch):
+    monkeypatch.setattr(triagem_mod.bedrock, "invocar_claude", lambda *a, **k: (
+        '{"categoria": "Cobrança Indevida", "produto": "Cartão de Crédito", '
+        '"sentimento": "Negativo", "urgencia": "Alta", "resumo": "cobrança em duplicidade"}'
+    ))
+    r = Nucleo(config).triagem.classificar("fui cobrado duas vezes no cartão")
+    assert isinstance(r, ResultadoTriagem)
+    assert r.categoria == "Cobrança Indevida" and r.produto == "Cartão de Crédito"
 
 
 def test_nucleo_sem_config_usa_ambiente(monkeypatch):
