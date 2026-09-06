@@ -5,6 +5,8 @@ apenas o `fg_rag`.** Os demais módulos (`fg_guard_rail`, `fg_triagem`, `fg_risc
 `fg_relatorios`, `fg_front`) entram um a um, cada um virando uma propriedade do
 `Nucleo`.
 
+Remote: `origin` → https://github.com/Rolmer1964/fg_core (ainda sem tag de versão).
+
 ## Instalação
 
 ```bash
