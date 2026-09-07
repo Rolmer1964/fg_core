@@ -1,5 +1,6 @@
 from fg_guardrail import Configuracao as ConfiguracaoGuardrail
 from fg_rag import Configuracao as ConfiguracaoRag
+from fg_risco import Configuracao as ConfiguracaoRisco
 from fg_triagem import Configuracao as ConfiguracaoTriagem
 
 from fg_core import Configuracao
@@ -47,6 +48,21 @@ def test_para_triagem_mapeia_1_para_1():
     assert t.max_tokens == 999
 
 
+def test_para_risco_mapeia_1_para_1():
+    c = Configuracao(
+        risco_modelo_bedrock="sonnet-x",
+        risco_regiao_aws="sa-east-1",
+        risco_temperatura=0.5,
+        risco_max_tokens=1234,
+    )
+    r = c.para_risco()
+    assert isinstance(r, ConfiguracaoRisco)
+    assert r.modelo_bedrock == "sonnet-x"
+    assert r.regiao_aws == "sa-east-1"
+    assert r.temperatura == 0.5
+    assert r.max_tokens == 1234
+
+
 def test_le_do_ambiente(monkeypatch):
     monkeypatch.setenv("FG_CORE_RAG_TOP_K", "9")
     monkeypatch.setenv("FG_CORE_RAG_VETORIZADOR", "deterministico")
@@ -68,3 +84,6 @@ def test_defaults():
     assert c.guardrail_tamanho_minimo_entrada == 10
     assert c.triagem_modelo_bedrock.startswith("us.anthropic.claude-haiku")
     assert c.triagem_temperatura == 0.1
+    assert c.risco_modelo_bedrock.startswith("us.anthropic.claude-sonnet")
+    assert c.risco_temperatura == 0.2
+    assert c.risco_max_tokens == 800

@@ -1,11 +1,15 @@
 # fg_core
 
-Integrador da família FinGuard (ver `../README.md`). **Estado atual: incorpora
-`fg_rag`, `fg_guardrail` e `fg_triagem`.** Os demais módulos (`fg_risco`,
-`fg_relatorios`, `fg_front`) entram um a um, cada um virando uma propriedade do
+Orquestrador da família FinGuard (ver `../README.md`). **Estado atual: incorpora
+`fg_rag`, `fg_guardrail`, `fg_triagem` e `fg_risco`.** Os demais módulos
+(`fg_relatorios`, `fg_front`) entram um a um, cada um virando uma propriedade do
 `Nucleo`.
 
-Remote: `origin` → https://github.com/Rolmer1964/fg_core · última versão **`v0.3.0`**.
+O `Nucleo` é o único ponto que conhece vários pacotes ao mesmo tempo. As folhas
+não se importam entre si; quando a saída de um passo precisa entrar noutro, a
+costura mora aqui (ex.: `avaliar_risco` liga `fg_rag` a `fg_risco`).
+
+Remote: `origin` → https://github.com/Rolmer1964/fg_core · última versão **`v0.4.0`**.
 
 ## Instalação
 
@@ -33,16 +37,21 @@ saida = nucleo.guardrail.sanitizar_saida("cliente João da Silva, CPF 123.456.78
 triagem = nucleo.triagem.classificar("fui cobrado em duplicidade no cartão",
                                      produto_sugerido="Cartão de Crédito")
 # triagem.categoria, .produto, .sentimento, .urgencia, .resumo
+
+# Risco — o Nucleo costura fg_rag (recuperar + formatar) e fg_risco (Claude Sonnet)
+risco = nucleo.avaliar_risco("fui cobrado em duplicidade no cartão", triagem)
+# risco.nivel, .justificativa, .acoes_recomendadas, .trechos_rag_usados
 ```
 
 Cada propriedade do `Nucleo` é a fachada do pacote correspondente — toda a API
-dele está disponível por ali.
+dele está disponível por ali. `avaliar_risco` é o único método que combina duas
+fachadas.
 
 ## Configuração
 
 `Configuracao` (pydantic-settings, prefixo `FG_CORE_`). Uma fatia por módulo:
 `rag_*` → `para_rag()`, `guardrail_*` → `para_guardrail()`, `triagem_*` →
-`para_triagem()`. Ver `.env.example`.
+`para_triagem()`, `risco_*` → `para_risco()`. Ver `.env.example`.
 
 ## Testes
 
@@ -54,9 +63,11 @@ ruff check src tests
 ## Dependências (git + tag)
 
 ```
+fg_dominio   @ git+https://github.com/Rolmer1964/fg_dominio.git@v0.2.0
 fg_rag       @ git+https://github.com/Rolmer1964/fg_rag.git@v0.1.0
 fg_guardrail @ git+https://github.com/Rolmer1964/fg_guardrail.git@v0.1.0
-fg_triagem   @ git+https://github.com/Rolmer1964/fg_triagem.git@v0.1.0   (traz fg_dominio)
+fg_triagem   @ git+https://github.com/Rolmer1964/fg_triagem.git@v0.2.0
+fg_risco     @ git+https://github.com/Rolmer1964/fg_risco.git@v0.1.0
 ```
 
 Para editar um deles localmente: `pip install -e ../<pacote>` depois do install

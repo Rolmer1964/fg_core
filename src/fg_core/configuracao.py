@@ -1,13 +1,15 @@
 """Configuração agregada do fg_core.
 
 Cada módulo da família tem sua fatia de campos (prefixada) e um `para_<modulo>()`
-que devolve a `Configuracao` dele. Hoje: `fg_rag`, `fg_guardrail`, `fg_triagem`.
+que devolve a `Configuracao` dele. Hoje: `fg_rag`, `fg_guardrail`, `fg_triagem`,
+`fg_risco`.
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from fg_guardrail import Configuracao as ConfiguracaoGuardrail
 from fg_rag import Configuracao as ConfiguracaoRag
+from fg_risco import Configuracao as ConfiguracaoRisco
 from fg_triagem import Configuracao as ConfiguracaoTriagem
 
 
@@ -38,6 +40,12 @@ class Configuracao(BaseSettings):
     triagem_regiao_aws: str = "us-east-1"
     triagem_temperatura: float = 0.1
     triagem_max_tokens: int = 600
+
+    # ---- fg_risco ----
+    risco_modelo_bedrock: str = "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
+    risco_regiao_aws: str = "us-east-1"
+    risco_temperatura: float = 0.2
+    risco_max_tokens: int = 800
 
     def para_rag(self) -> ConfiguracaoRag:
         """Traduz a fatia `rag_*` para a `Configuracao` do fg_rag."""
@@ -71,4 +79,13 @@ class Configuracao(BaseSettings):
             regiao_aws=self.triagem_regiao_aws,
             temperatura=self.triagem_temperatura,
             max_tokens=self.triagem_max_tokens,
+        )
+
+    def para_risco(self) -> ConfiguracaoRisco:
+        """Traduz a fatia `risco_*` para a `Configuracao` do fg_risco."""
+        return ConfiguracaoRisco(
+            modelo_bedrock=self.risco_modelo_bedrock,
+            regiao_aws=self.risco_regiao_aws,
+            temperatura=self.risco_temperatura,
+            max_tokens=self.risco_max_tokens,
         )
