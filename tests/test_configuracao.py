@@ -1,5 +1,6 @@
 from fg_guardrail import Configuracao as ConfiguracaoGuardrail
 from fg_rag import Configuracao as ConfiguracaoRag
+from fg_relatorios import Configuracao as ConfiguracaoRelatorios
 from fg_risco import Configuracao as ConfiguracaoRisco
 from fg_triagem import Configuracao as ConfiguracaoTriagem
 
@@ -63,6 +64,13 @@ def test_para_risco_mapeia_1_para_1():
     assert r.max_tokens == 1234
 
 
+def test_para_relatorios_mapeia_1_para_1():
+    c = Configuracao(relatorios_output_dir="/tmp/saida")
+    rel = c.para_relatorios()
+    assert isinstance(rel, ConfiguracaoRelatorios)
+    assert rel.output_dir == "/tmp/saida"
+
+
 def test_le_do_ambiente(monkeypatch):
     monkeypatch.setenv("FG_CORE_RAG_TOP_K", "9")
     monkeypatch.setenv("FG_CORE_RAG_VETORIZADOR", "deterministico")
@@ -87,3 +95,4 @@ def test_defaults():
     assert c.risco_modelo_bedrock.startswith("us.anthropic.claude-sonnet")
     assert c.risco_temperatura == 0.2
     assert c.risco_max_tokens == 800
+    assert c.relatorios_output_dir == "output"

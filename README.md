@@ -1,15 +1,15 @@
 # fg_core
 
-Orquestrador da família FinGuard (ver `../README.md`). **Estado atual: incorpora
-`fg_rag`, `fg_guardrail`, `fg_triagem` e `fg_risco`.** Os demais módulos
-(`fg_relatorios`, `fg_front`) entram um a um, cada um virando uma propriedade do
-`Nucleo`.
+Wiring da família FinGuard (ver `../README.md`). **Estado atual: incorpora
+`fg_rag`, `fg_guardrail`, `fg_triagem`, `fg_risco` e `fg_relatorios`.** Falta só
+`fg_front`, que entra como propriedade do `Nucleo` quando ficar pronto.
 
-O `Nucleo` é o único ponto que conhece vários pacotes ao mesmo tempo. As folhas
-não se importam entre si; quando a saída de um passo precisa entrar noutro, a
-costura mora aqui (ex.: `avaliar_risco` liga `fg_rag` a `fg_risco`).
+O `Nucleo` é o único ponto que conhece vários pacotes ao mesmo tempo, mas **só
+entrega instâncias configuradas** — não combina folhas. A costura entre passos
+(ex.: montar o `contexto_politica` a partir do `fg_rag` antes de chamar o risco)
+é do `fg_orquestrador`, não daqui.
 
-Remote: `origin` → https://github.com/Rolmer1964/fg_core · última versão **`v0.4.0`**.
+Remote: `origin` → https://github.com/Rolmer1964/fg_core · última versão **`v0.5.0`**.
 
 ## Instalação
 
@@ -36,22 +36,26 @@ saida = nucleo.guardrail.sanitizar_saida("cliente João da Silva, CPF 123.456.78
 # Triagem (fg_triagem.Triagem — precisa de credenciais AWS)
 triagem = nucleo.triagem.classificar("fui cobrado em duplicidade no cartão",
                                      produto_sugerido="Cartão de Crédito")
-# triagem.categoria, .produto, .sentimento, .urgencia, .resumo
 
-# Risco — o Nucleo costura fg_rag (recuperar + formatar) e fg_risco (Claude Sonnet)
-risco = nucleo.avaliar_risco("fui cobrado em duplicidade no cartão", triagem)
-# risco.nivel, .justificativa, .acoes_recomendadas, .trechos_rag_usados
+# Risco (fg_risco.Risco — recebe o contexto da política já formatado)
+contexto = nucleo.rag.formatar_para_prompt(trechos)
+risco = nucleo.risco.avaliar("fui cobrado em duplicidade no cartão", triagem, contexto)
+
+# Relatórios (fg_relatorios.Relatorios)
+consolidado = nucleo.relatorios.consolidar(triagem, risco, canal="Procon")
+nucleo.relatorios.escrever_saidas([{"id": "1", "canal": "Procon", **vars(consolidado)}])
 ```
 
 Cada propriedade do `Nucleo` é a fachada do pacote correspondente — toda a API
-dele está disponível por ali. `avaliar_risco` é o único método que combina duas
-fachadas.
+dele está disponível por ali. Ligar a saída de um passo à entrada de outro é
+trabalho do `fg_orquestrador`.
 
 ## Configuração
 
 `Configuracao` (pydantic-settings, prefixo `FG_CORE_`). Uma fatia por módulo:
 `rag_*` → `para_rag()`, `guardrail_*` → `para_guardrail()`, `triagem_*` →
-`para_triagem()`, `risco_*` → `para_risco()`. Ver `.env.example`.
+`para_triagem()`, `risco_*` → `para_risco()`, `relatorios_*` →
+`para_relatorios()`. Ver `.env.example`.
 
 ## Testes
 
@@ -63,11 +67,12 @@ ruff check src tests
 ## Dependências (git + tag)
 
 ```
-fg_dominio   @ git+https://github.com/Rolmer1964/fg_dominio.git@v0.2.0
-fg_rag       @ git+https://github.com/Rolmer1964/fg_rag.git@v0.1.0
-fg_guardrail @ git+https://github.com/Rolmer1964/fg_guardrail.git@v0.1.0
-fg_triagem   @ git+https://github.com/Rolmer1964/fg_triagem.git@v0.2.0
-fg_risco     @ git+https://github.com/Rolmer1964/fg_risco.git@v0.1.0
+fg_dominio    @ git+https://github.com/Rolmer1964/fg_dominio.git@v0.3.0
+fg_rag        @ git+https://github.com/Rolmer1964/fg_rag.git@v0.1.0
+fg_guardrail  @ git+https://github.com/Rolmer1964/fg_guardrail.git@v0.1.0
+fg_triagem    @ git+https://github.com/Rolmer1964/fg_triagem.git@v0.2.1
+fg_risco      @ git+https://github.com/Rolmer1964/fg_risco.git@v0.1.1
+fg_relatorios @ git+https://github.com/Rolmer1964/fg_relatorios.git@v0.2.0
 ```
 
 Para editar um deles localmente: `pip install -e ../<pacote>` depois do install

@@ -4,17 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fg_core"
-version = "0.4.0"
-description = "fg_core — orquestrador da família FinGuard (fg_rag, fg_guardrail, fg_triagem, fg_risco, ...)"
+version = "0.5.0"
+description = "fg_core — wiring da família FinGuard (fg_rag, fg_guardrail, fg_triagem, fg_risco, fg_relatorios)"
 requires-python = ">=3.12"
 dependencies = [
     "pydantic==2.9.2",
     "pydantic-settings==2.5.2",
-    "fg_dominio @ git+https://github.com/Rolmer1964/fg_dominio.git@v0.2.0",
+    "fg_dominio @ git+https://github.com/Rolmer1964/fg_dominio.git@v0.3.0",
     "fg_rag @ git+https://github.com/Rolmer1964/fg_rag.git@v0.1.0",
     "fg_guardrail @ git+https://github.com/Rolmer1964/fg_guardrail.git@v0.1.0",
-    "fg_triagem @ git+https://github.com/Rolmer1964/fg_triagem.git@v0.2.0",
-    "fg_risco @ git+https://github.com/Rolmer1964/fg_risco.git@v0.1.0",
+    "fg_triagem @ git+https://github.com/Rolmer1964/fg_triagem.git@v0.2.1",
+    "fg_risco @ git+https://github.com/Rolmer1964/fg_risco.git@v0.1.1",
+    "fg_relatorios @ git+https://github.com/Rolmer1964/fg_relatorios.git@v0.2.0",
 ]
 
 [project.optional-dependencies]

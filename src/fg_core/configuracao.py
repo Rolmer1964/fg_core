@@ -2,13 +2,14 @@
 
 Cada módulo da família tem sua fatia de campos (prefixada) e um `para_<modulo>()`
 que devolve a `Configuracao` dele. Hoje: `fg_rag`, `fg_guardrail`, `fg_triagem`,
-`fg_risco`.
+`fg_risco`, `fg_relatorios`.
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from fg_guardrail import Configuracao as ConfiguracaoGuardrail
 from fg_rag import Configuracao as ConfiguracaoRag
+from fg_relatorios import Configuracao as ConfiguracaoRelatorios
 from fg_risco import Configuracao as ConfiguracaoRisco
 from fg_triagem import Configuracao as ConfiguracaoTriagem
 
@@ -46,6 +47,9 @@ class Configuracao(BaseSettings):
     risco_regiao_aws: str = "us-east-1"
     risco_temperatura: float = 0.2
     risco_max_tokens: int = 800
+
+    # ---- fg_relatorios ----
+    relatorios_output_dir: str = "output"
 
     def para_rag(self) -> ConfiguracaoRag:
         """Traduz a fatia `rag_*` para a `Configuracao` do fg_rag."""
@@ -89,3 +93,7 @@ class Configuracao(BaseSettings):
             temperatura=self.risco_temperatura,
             max_tokens=self.risco_max_tokens,
         )
+
+    def para_relatorios(self) -> ConfiguracaoRelatorios:
+        """Traduz a fatia `relatorios_*` para a `Configuracao` do fg_relatorios."""
+        return ConfiguracaoRelatorios(output_dir=self.relatorios_output_dir)

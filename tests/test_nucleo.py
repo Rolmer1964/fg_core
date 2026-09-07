@@ -1,7 +1,7 @@
-import fg_risco.risco as risco_mod
 import fg_triagem.triagem as triagem_mod
 from fg_guardrail import Guardrail
 from fg_rag import RagLocal
+from fg_relatorios import Relatorios
 from fg_risco import Risco
 from fg_triagem import ResultadoTriagem, Triagem
 
@@ -64,57 +64,17 @@ def test_risco_e_risco_lazy_e_unico(config):
     assert n.risco is primeiro
 
 
-def test_avaliar_risco_costura_rag_e_risco(config, escrever_doc, monkeypatch):
-    escrever_doc(
-        "cobranca.md",
-        "Seção 2. Cobrança indevida.\n\nEstornar o cliente em até 24 horas e registrar no SAC.",
-    )
-    Nucleo(config).rag.ingerir()
-
-    capturado = {}
-
-    def _fake_invocar(cfg, system, user):  # noqa: ANN001, ARG001
-        capturado["user"] = user
-        return (
-            '{"risco": "Médio", "justificativa": "conforme §2 da POL-SAC-001", '
-            '"acoes_recomendadas": ["Estornar em 24h"]}'
-        )
-
-    monkeypatch.setattr(risco_mod.bedrock, "invocar_claude", _fake_invocar)
-
-    triagem = ResultadoTriagem(
-        categoria="Cobrança Indevida",
-        produto="Cartão de Crédito",
-        sentimento="Negativo",
-        urgencia="Alta",
-        resumo="cobrança em duplicidade",
-    )
-    r = Nucleo(config).avaliar_risco("fui cobrado duas vezes no cartão", triagem)
-
-    assert r.nivel == "Médio"
-    assert r.acoes_recomendadas == ["Estornar em 24h"]
-    assert r.trechos_rag_usados >= 1
-    # o contexto da política (via fg_rag) chegou ao prompt do fg_risco
-    assert "Cobrança indevida" in capturado["user"]
-    # e as dimensões da triagem também
-    assert "Cobrança Indevida" in capturado["user"] and "Cartão de Crédito" in capturado["user"]
+def test_relatorios_e_relatorios_lazy_e_unico(config):
+    n = Nucleo(config)
+    assert n._relatorios is None
+    primeiro = n.relatorios
+    assert isinstance(primeiro, Relatorios)
+    assert n.relatorios is primeiro
 
 
-def test_avaliar_risco_sem_indice_usa_placeholder(config, monkeypatch):
-    capturado = {}
-
-    def _fake_invocar(cfg, system, user):  # noqa: ANN001, ARG001
-        capturado["user"] = user
-        return '{"risco": "Baixo"}'
-
-    monkeypatch.setattr(risco_mod.bedrock, "invocar_claude", _fake_invocar)
-
-    triagem = ResultadoTriagem("Outros", "Não Identificado", "Neutro", "Baixa", "sem detalhes")
-    r = Nucleo(config).avaliar_risco("mensagem genérica", triagem)
-
-    assert r.nivel == "Baixo"
-    assert r.trechos_rag_usados == 0
-    assert "índice vazio" in capturado["user"]
+def test_relatorios_usa_output_dir_do_core():
+    n = Nucleo(Configuracao(relatorios_output_dir="/tmp/fg-saida"))
+    assert n.relatorios.configuracao.output_dir == "/tmp/fg-saida"
 
 
 def test_nucleo_sem_config_usa_ambiente(monkeypatch):
